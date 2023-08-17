@@ -1,6 +1,12 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+import pandas as pd
+
 
 # List of companies
 companies = [
@@ -23,8 +29,9 @@ companies = [
 ]
 
 
-# Initialize Chrome WebDriver
-driver = webdriver.Chrome()
+# Start the webdriver
+#driver = webdriver.Chrome("C:/Users/valerio/Desktop/Courses/LinkedinAuto/chromedriver.exe")
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))  # starts the webdriver
 
 # Create a list to store company data
 company_data = []
@@ -53,9 +60,15 @@ driver.quit()
 # Create a DataFrame from the company data
 df = pd.DataFrame(company_data)
 
-# Save the DataFrame to an Excel file
-excel_file = "company_urls.xlsx"
-df.to_excel(excel_file, index=False)
-print(f"Company URLs saved to {excel_file}")
+# Read the existing file into a pandas dataframe
+try:
+        existing_df = pd.read_excel("URL-finder.xlsx")
+        # Concatenate the existing data with the new data
+        final_df = pd.concat([existing_df, df], ignore_index=True)
+except FileNotFoundError:
+        # If the file doesn't exist, just write the new data to it
+        final_df = df
 
+    # Write the final data to the same excel file
+final_df.to_excel("URL-finder.xlsx", index=False, sheet_name='Sheet1', engine='openpyxl')
 
