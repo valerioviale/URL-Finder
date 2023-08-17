@@ -8,16 +8,22 @@ import os.path
 
 # List of companies
 companies = [
-    "GESTORE DEI MERCATI ENERGETICI",
-    "ENI",
-    "STELLANTIS EUROPE",
-    "Ferrari automobili",
-    "Universita Milano Bicocca"
+    "	SEND TO ME S.R.L.	"	,
+"	GUCCI LOGISTICA SOCIETA' PER AZIONI	"	,
+"	GOTTARDO S.P.A.	"	,
+"	BOLTON FOOD S.P.A.	"	,
+"	GENERAL CAVI - SOCIETA' PER AZIONI	"	,
+"	G.A. OPERATIONS S.P.A.	"	,
+"	HAVI LOGISTICS S.R.L.	"	,
+"	WUERTH S.R.L. - G.M.B.H.	"	
     # ... (add all other companies here)
 ]
 
 # File path for the Excel file
 excel_file_path = 'Url-Finder.xlsx'
+
+# Domains to exclude
+excluded_domains = ["wikipedia.org", "www.dnb.com", "it.kompass.com","gb.kompass.com", "www.ufficiocamerale.it", "it.linkedin.com", "www.linkedin.com", "www.bloomberg.com","www.informazione-aziende.it", "atoka.io", "www.reportaziende.it", "www.europages.co.uk", "italy.globaldatabase.com", "www.creditsafe.com","creditsafe.com", "registroaziende.it", "www.icribis.com", "www.gdonews.it", "www.visura.pro", "www.gdoweek.it", "www.empresite.it", "www.paginebianche.it",".linkedin.com", "www.companyreports.it"]
 
 # Start the webdriver
 driver = webdriver.Firefox(executable_path=GeckoDriverManager().install())  # starts the webdriver
@@ -42,18 +48,31 @@ for company in companies:
     search_bar.send_keys(Keys.RETURN)
 
     # Wait for search results to load
-    time.sleep(3)
+    time.sleep(2)
     
-    # Find the span containing "https"
-    try:
-        url_span = driver.find_element(By.XPATH, "//span[contains(text(), 'https')]")
-        company_url = url_span.text
-    except:
-        company_url = "No URL found"
+    # Find all spans containing "https"
+    url_spans = driver.find_elements(By.XPATH, "//span[contains(text(), 'https')]")
+    
+    company_url = "No URL found"
+    
+    for url_span in url_spans:
+        url = url_span.text
+        excluded = False
+        for domain in excluded_domains:
+            if domain in url:
+                excluded = True
+                break
+        
+        if excluded:
+            # Skip excluded URLs and move to the next URL
+            continue
+        
+        company_url = url
+        break  # Stop searching once a valid URL is found
     
     company_data.append({"Company": company, "URL": company_url})
     
-    time.sleep(2)  # Delay for 2 seconds before the next search
+    time.sleep(1)  # Delay for 2 seconds before the next search
 
 # Create a DataFrame from the company data
 df = pd.DataFrame(company_data)
